@@ -534,11 +534,11 @@
                                     />
                                     <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                                         {allProviders.filter(p => p.toLowerCase().includes(providerSearch.toLowerCase())).map(prov => (
-                                            <label key={prov} className="flex items-center gap-2 cursor-pointer group">
-                                                <div onClick={() => toggleProvider(prov)} className="cursor-pointer">
+                                            <label key={prov} className="flex items-center gap-2 cursor-pointer group" onClick={() => toggleProvider(prov)}>
+                                                <div className="flex-shrink-0">
                                                     {selectedProviders.has(prov) ? <Icons.CheckboxChecked /> : <Icons.CheckboxUnchecked />}
                                                 </div>
-                                                <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-kilo-600 dark:group-hover:text-kilo-400 select-none" onClick={() => toggleProvider(prov)}>{prov}</span>
+                                                <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-kilo-600 dark:group-hover:text-kilo-400 select-none">{prov}</span>
                                             </label>
                                         ))}
                                     </div>
