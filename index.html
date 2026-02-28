@@ -265,29 +265,30 @@
             useEffect(() => {
                 const fetchModels = async () => {
                     try {
-                        const res = await fetch('https://corsproxy.io/?https://api.kilo.ai/api/gateway/models-by-provider');
+                        const res = await fetch('https://corsproxy.io/?https://api.kilo.ai/api/gateway/models');
                         if (!res.ok) throw new Error('API request failed');
                         const data = await res.json();
 
                         let flatData = [];
+
+                        const extractPricing = (raw) => {
+                            const promptVal = parseFloat(raw?.prompt || raw?.input || 0);
+                            const completionVal = parseFloat(raw?.completion || raw?.output || 0);
+                            // If values look like per-token (very small), convert to per-1M
+                            const needsConversion = (promptVal > 0 && promptVal < 0.01) || (completionVal > 0 && completionVal < 0.01);
+                            const multiplier = needsConversion ? 1000000 : 1;
+                            return {
+                                prompt: String(promptVal * multiplier),
+                                completion: String(completionVal * multiplier)
+                            };
+                        };
+
                         if (data.providers && Array.isArray(data.providers)) {
                             const modelMap = new Map();
-                            const extractPricing = (m) => {
-                                const raw = m.endpoint?.pricing || m.pricing || {};
-                                const promptVal = parseFloat(raw.prompt || raw.input || 0);
-                                const completionVal = parseFloat(raw.completion || raw.output || 0);
-                                // If values look like per-token (very small), convert to per-1M
-                                const needsConversion = (promptVal > 0 && promptVal < 0.01) || (completionVal > 0 && completionVal < 0.01);
-                                const multiplier = needsConversion ? 1000000 : 1;
-                                return {
-                                    prompt: String(promptVal * multiplier),
-                                    completion: String(completionVal * multiplier)
-                                };
-                            };
                             data.providers.forEach(p => {
                                 (p.models || []).forEach(m => {
                                     const uid = m.slug || m.name || m.id;
-                                    const enrichedModel = { ...m, pricing: extractPricing(m) };
+                                    const enrichedModel = { ...m, pricing: extractPricing(m.endpoint?.pricing || m.pricing) };
                                     if (!modelMap.has(uid)) {
                                         modelMap.set(uid, { ...enrichedModel, id: uid, providerData: { [p.name]: enrichedModel }, providers: [p.name] });
                                     } else {
@@ -304,12 +305,74 @@
                         } else if (Array.isArray(data)) {
                             flatData = data.map(m => {
                                 const uid = m.slug || m.name || m.id;
-                                return { ...m, id: uid, providerData: { [m.provider || 'Unknown']: m }, providers: [m.provider || 'Unknown'] };
+
+                                let provider = m.provider;
+                                if (!provider && typeof uid === 'string') {
+                                    if (uid.includes('/')) {
+                                        provider = uid.split('/')[0];
+                                    } else if (uid.includes(':')) {
+                                        provider = uid.split(':')[0];
+                                    }
+                                    if (provider) {
+                                        provider = provider.charAt(0).toUpperCase() + provider.slice(1);
+                                    } else {
+                                        provider = "Kilo";
+                                    }
+                                } else if (!provider) {
+                                    provider = "Kilo";
+                                }
+
+                                let modalities = [];
+                                if (m.architecture?.input_modalities) {
+                                    modalities = m.architecture.input_modalities;
+                                } else if (m.architecture?.modalities) {
+                                    modalities = m.architecture.modalities;
+                                } else {
+                                    modalities = ["text"];
+                                }
+
+                                const enrichedModel = {
+                                    ...m,
+                                    pricing: extractPricing(m.pricing),
+                                    architecture: { ...m.architecture, modalities }
+                                };
+                                return { ...enrichedModel, id: uid, providerData: { [provider]: enrichedModel }, providers: [provider] };
                             });
                         } else if (data.data && Array.isArray(data.data)) {
                             flatData = data.data.map(m => {
                                 const uid = m.slug || m.name || m.id;
-                                return { ...m, id: uid, providerData: { [m.provider || 'Unknown']: m }, providers: [m.provider || 'Unknown'] };
+
+                                let provider = m.provider;
+                                if (!provider && typeof uid === 'string') {
+                                    if (uid.includes('/')) {
+                                        provider = uid.split('/')[0];
+                                    } else if (uid.includes(':')) {
+                                        provider = uid.split(':')[0];
+                                    }
+                                    if (provider) {
+                                        provider = provider.charAt(0).toUpperCase() + provider.slice(1);
+                                    } else {
+                                        provider = "Kilo";
+                                    }
+                                } else if (!provider) {
+                                    provider = "Kilo";
+                                }
+
+                                let modalities = [];
+                                if (m.architecture?.input_modalities) {
+                                    modalities = m.architecture.input_modalities;
+                                } else if (m.architecture?.modalities) {
+                                    modalities = m.architecture.modalities;
+                                } else {
+                                    modalities = ["text"];
+                                }
+
+                                const enrichedModel = {
+                                    ...m,
+                                    pricing: extractPricing(m.pricing),
+                                    architecture: { ...m.architecture, modalities }
+                                };
+                                return { ...enrichedModel, id: uid, providerData: { [provider]: enrichedModel }, providers: [provider] };
                             });
                         } else {
                             throw new Error('Unrecognized data format');
