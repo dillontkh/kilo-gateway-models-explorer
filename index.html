@@ -121,6 +121,7 @@
 
         // --- Components ---
         const ModelCard = ({ model, expandedId, setExpandedId, handleCopy, copiedId }) => {
+            const hasMultipleProviders = model.providers && model.providers.length > 1;
             const isExpanded = expandedId === model.id;
             const [selectedProvider, setSelectedProvider] = useState(model.providers[0]);
 
@@ -139,8 +140,8 @@
                     onClick={() => setExpandedId(isExpanded ? null : model.id)}
                     className={`group flex flex-col bg-white dark:bg-slate-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${isExpanded ? 'border-2 border-kilo-500 shadow-md ring-4 ring-kilo-500/10' : 'border border-gray-200 dark:border-slate-700 hover:border-kilo-300 dark:hover:border-kilo-700 hover:shadow-[0_4px_20px_-4px_rgba(20,184,166,0.15)] shadow-sm'}`}
                 >
-                    {/* Tabs */}
-                    {model.providers && model.providers.length > 1 && (
+                    {/* Provider Tabs (only shown when expanded and multiple providers) */}
+                    {hasMultipleProviders && isExpanded && (
                         <div className="flex px-5 pt-3 gap-4 overflow-x-auto custom-scrollbar border-b border-gray-100 dark:border-slate-750 bg-gray-50/50 dark:bg-slate-800/80">
                             {model.providers.map(p => (
                                 <button
@@ -163,9 +164,15 @@
                                 </h2>
                                 <div className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{model.id}</div>
                             </div>
-                            {model.providers?.length <= 1 && (
+                            {/* Single provider: show name badge. Multiple providers when collapsed: show count badge */}
+                            {(!hasMultipleProviders) && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200 border border-gray-200 dark:border-slate-600 whitespace-nowrap">
                                     {selectedProvider}
+                                </span>
+                            )}
+                            {hasMultipleProviders && !isExpanded && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-kilo-100 text-kilo-800 dark:bg-kilo-900/30 dark:text-kilo-300 border border-kilo-200 dark:border-kilo-800/50 whitespace-nowrap">
+                                    {model.providers.length} providers
                                 </span>
                             )}
                         </div>
@@ -638,7 +645,7 @@
                                     </div>
 
                                     {/* Grid */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-12 items-start">
                                         {filteredAndSortedModels.map(model => (
                                             <ModelCard
                                                 key={model.id}
