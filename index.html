@@ -119,6 +119,119 @@
             }
         };
 
+        // --- Components ---
+        const ModelCard = ({ model, expandedId, setExpandedId, handleCopy, copiedId }) => {
+            const isExpanded = expandedId === model.id;
+            const [selectedProvider, setSelectedProvider] = useState(model.providers[0]);
+
+            useEffect(() => {
+                if (model.providers && !model.providers.includes(selectedProvider)) {
+                    setSelectedProvider(model.providers[0]);
+                }
+            }, [model.providers, selectedProvider]);
+
+            const activeModelData = model.providerData?.[selectedProvider] || model;
+            const inPrice = parseFloat(activeModelData.pricing?.prompt || activeModelData.pricing?.input || 0);
+            const outPrice = parseFloat(activeModelData.pricing?.completion || activeModelData.pricing?.output || 0);
+
+            return (
+                <div
+                    onClick={() => setExpandedId(isExpanded ? null : model.id)}
+                    className={`group flex flex-col bg-white dark:bg-slate-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${isExpanded ? 'border-2 border-kilo-500 shadow-md ring-4 ring-kilo-500/10' : 'border border-gray-200 dark:border-slate-700 hover:border-kilo-300 dark:hover:border-kilo-700 hover:shadow-[0_4px_20px_-4px_rgba(20,184,166,0.15)] shadow-sm'}`}
+                >
+                    {/* Tabs */}
+                    {model.providers && model.providers.length > 1 && (
+                        <div className="flex px-5 pt-3 gap-4 overflow-x-auto custom-scrollbar border-b border-gray-100 dark:border-slate-750 bg-gray-50/50 dark:bg-slate-800/80">
+                            {model.providers.map(p => (
+                                <button
+                                    key={p}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedProvider(p); }}
+                                    className={`pb-2 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${selectedProvider === p ? 'border-kilo-500 text-kilo-600 dark:text-kilo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="p-5 pt-4 flex-1 flex flex-col">
+                        {/* Card Header */}
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-1 group-hover:text-kilo-600 dark:group-hover:text-kilo-400 transition-colors">
+                                    {model.name || model.id}
+                                </h2>
+                                <div className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{model.id}</div>
+                            </div>
+                            {model.providers?.length <= 1 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200 border border-gray-200 dark:border-slate-600 whitespace-nowrap">
+                                    {selectedProvider}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                            {inPrice === 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/50">
+                                    Free Input
+                                </span>
+                            )}
+                            {(model.architecture?.modalities || []).map(mod => (
+                                <span key={mod} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100/80 text-gray-600 dark:bg-slate-700/50 dark:text-gray-300 text-xs border border-gray-200 dark:border-slate-600 capitalize">
+                                    {getModalityIcon(mod)} {mod}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Description */}
+                        <div className={`text-sm text-gray-600 dark:text-gray-400 mb-6 flex-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                            {model.description || "No description available."}
+                        </div>
+
+                        {/* Stats Footer */}
+                        <div className="mt-auto grid grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-750">
+                            <div className="flex flex-col px-2 border-r border-gray-200 dark:border-slate-700">
+                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">Context</span>
+                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">{formatContextWindow(activeModelData.context_length || model.context_length)}</span>
+                            </div>
+                            <div className="flex flex-col px-2 border-r border-gray-200 dark:border-slate-700">
+                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">In / 1M</span>
+                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">${inPrice.toFixed(2)}</span>
+                            </div>
+                            <div className="flex flex-col px-2">
+                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">Out / 1M</span>
+                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">${outPrice.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Expanded JSON View */}
+                    {isExpanded && (
+                        <div className="border-t border-gray-200 dark:border-slate-700 bg-gray-900 relative">
+                            <div className="absolute top-2 right-2 flex items-center">
+                                {copiedId === model.id ? (
+                                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-medium cursor-default">
+                                        <Icons.Check /> Copied
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={(e) => handleCopy(e, JSON.stringify(activeModelData, null, 2), model.id)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 text-gray-300 hover:bg-slate-700 hover:text-white border border-slate-700 transition-colors text-xs font-medium"
+                                    >
+                                        <Icons.Copy /> Copy JSON
+                                    </button>
+                                )}
+                            </div>
+                            <pre className="p-4 pt-12 overflow-x-auto text-[11px] font-mono text-gray-300 custom-scrollbar max-h-96">
+                                {JSON.stringify(activeModelData, null, 2)}
+                            </pre>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
         // --- Main App ---
         const App = () => {
             const [models, setModels] = useState([]);
@@ -154,30 +267,45 @@
                             const modelMap = new Map();
                             data.providers.forEach(p => {
                                 (p.models || []).forEach(m => {
-                                    if (!modelMap.has(m.id)) {
-                                        modelMap.set(m.id, { ...m, providers: [p.name] });
+                                    const uid = m.slug || m.name || m.id;
+                                    if (!modelMap.has(uid)) {
+                                        modelMap.set(uid, { ...m, id: uid, providerData: { [p.name]: m }, providers: [p.name] });
                                     } else {
-                                        const existing = modelMap.get(m.id);
+                                        const existing = modelMap.get(uid);
+                                        existing.providerData[p.name] = m;
                                         if (!existing.providers.includes(p.name)) {
                                             existing.providers.push(p.name);
+                                            existing.providers.sort();
                                         }
                                     }
                                 });
                             });
                             flatData = Array.from(modelMap.values());
                         } else if (Array.isArray(data)) {
-                            flatData = data.map(m => ({ ...m, providers: [m.provider || 'Unknown'] }));
+                            flatData = data.map(m => {
+                                const uid = m.slug || m.name || m.id;
+                                return { ...m, id: uid, providerData: { [m.provider || 'Unknown']: m }, providers: [m.provider || 'Unknown'] };
+                            });
                         } else if (data.data && Array.isArray(data.data)) {
-                            flatData = data.data.map(m => ({ ...m, providers: [m.provider || 'Unknown'] }));
+                            flatData = data.data.map(m => {
+                                const uid = m.slug || m.name || m.id;
+                                return { ...m, id: uid, providerData: { [m.provider || 'Unknown']: m }, providers: [m.provider || 'Unknown'] };
+                            });
                         } else {
                             throw new Error('Unrecognized data format');
                         }
 
-                        setModels(flatData.length ? flatData : MOCK_MODELS.map(m => ({ ...m, providers: [m.provider_name_from_group] })));
+                        setModels(flatData.length ? flatData : MOCK_MODELS.map(m => {
+                            const uid = m.slug || m.name || m.id;
+                            return { ...m, id: uid, providerData: { [m.provider_name_from_group]: m }, providers: [m.provider_name_from_group] };
+                        }));
                         if (!flatData.length) setFallbackStatus(true);
                     } catch (err) {
                         console.error("Fetch failed:", err);
-                        setModels(MOCK_MODELS.map(m => ({ ...m, providers: [m.provider_name_from_group] })));
+                        setModels(MOCK_MODELS.map(m => {
+                            const uid = m.slug || m.name || m.id;
+                            return { ...m, id: uid, providerData: { [m.provider_name_from_group]: m }, providers: [m.provider_name_from_group] };
+                        }));
                         setFallbackStatus(true);
                     } finally {
                         setLoading(false);
@@ -241,35 +369,53 @@
                 // Context Filter
                 if (contextRange !== 'all') {
                     result = result.filter(m => {
-                        const ctx = parseInt(m.context_length || 0, 10);
-                        if (contextRange === '<32k') return ctx < 32000;
-                        if (contextRange === '32k-128k') return ctx >= 32000 && ctx <= 128000;
-                        if (contextRange === '128k-256k') return ctx > 128000 && ctx <= 256000;
-                        if (contextRange === '>256k') return ctx > 256000;
-                        return true;
+                        return m.providers.some(p => {
+                            const pm = m.providerData?.[p] || m;
+                            const ctx = parseInt(pm.context_length || 0, 10);
+                            if (contextRange === '<32k') return ctx < 32000;
+                            if (contextRange === '32k-128k') return ctx >= 32000 && ctx <= 128000;
+                            if (contextRange === '128k-256k') return ctx > 128000 && ctx <= 256000;
+                            if (contextRange === '>256k') return ctx > 256000;
+                            return true;
+                        });
                     });
                 }
 
                 // Pricing Filter
                 result = result.filter(m => {
-                    const iPrice = parseFloat(m.pricing?.prompt || m.pricing?.input || 0);
-                    const oPrice = parseFloat(m.pricing?.completion || m.pricing?.output || 0);
+                    const providerPrices = m.providers.map(p => {
+                        const pm = m.providerData?.[p] || m;
+                        return {
+                            in: parseFloat(pm.pricing?.prompt || pm.pricing?.input || 0),
+                            out: parseFloat(pm.pricing?.completion || pm.pricing?.output || 0)
+                        };
+                    });
 
-                    if (pricing.inMin && iPrice < parseFloat(pricing.inMin)) return false;
-                    if (pricing.inMax && iPrice > parseFloat(pricing.inMax)) return false;
-                    if (pricing.outMin && oPrice < parseFloat(pricing.outMin)) return false;
-                    if (pricing.outMax && oPrice > parseFloat(pricing.outMax)) return false;
-
-                    return true;
+                    return providerPrices.some(prices => {
+                        if (pricing.inMin && prices.in < parseFloat(pricing.inMin)) return false;
+                        if (pricing.inMax && prices.in > parseFloat(pricing.inMax)) return false;
+                        if (pricing.outMin && prices.out < parseFloat(pricing.outMin)) return false;
+                        if (pricing.outMax && prices.out > parseFloat(pricing.outMax)) return false;
+                        return true;
+                    });
                 });
 
                 // Sorting
                 result.sort((a, b) => {
                     const nameA = a.name || ''; const nameB = b.name || '';
                     const provA = (a.providers || [])[0] || a.provider_name_from_group || ''; const provB = (b.providers || [])[0] || b.provider_name_from_group || '';
-                    const ctxA = parseInt(a.context_length || 0, 10); const ctxB = parseInt(b.context_length || 0, 10);
-                    const prA = parseFloat(a.pricing?.prompt || 0) + parseFloat(a.pricing?.completion || 0);
-                    const prB = parseFloat(b.pricing?.prompt || 0) + parseFloat(b.pricing?.completion || 0);
+
+                    const getMinPrice = (m) => Math.min(...(m.providers.length ? m.providers : ['']).map(p => {
+                        const pm = m.providerData?.[p] || m;
+                        return parseFloat(pm.pricing?.prompt || pm.pricing?.input || 0) + parseFloat(pm.pricing?.completion || pm.pricing?.output || 0);
+                    }));
+                    const getMaxCtx = (m) => Math.max(...(m.providers.length ? m.providers : ['']).map(p => {
+                        const pm = m.providerData?.[p] || m;
+                        return parseInt(pm.context_length || 0, 10);
+                    }));
+
+                    const ctxA = getMaxCtx(a); const ctxB = getMaxCtx(b);
+                    const prA = getMinPrice(a); const prB = getMinPrice(b);
 
                     switch (sortOption) {
                         case 'name-asc': return nameA.localeCompare(nameB);
@@ -493,92 +639,16 @@
 
                                     {/* Grid */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
-                                        {filteredAndSortedModels.map(model => {
-                                            const isExpanded = expandedId === model.id;
-                                            const inPrice = parseFloat(model.pricing?.prompt || model.pricing?.input || 0);
-                                            const outPrice = parseFloat(model.pricing?.completion || model.pricing?.output || 0);
-
-                                            return (
-                                                <div
-                                                    key={model.id}
-                                                    onClick={() => setExpandedId(isExpanded ? null : model.id)}
-                                                    className={`group flex flex-col bg-white dark:bg-slate-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${isExpanded ? 'border-2 border-kilo-500 shadow-md ring-4 ring-kilo-500/10' : 'border border-gray-200 dark:border-slate-700 hover:border-kilo-300 dark:hover:border-kilo-700 hover:shadow-[0_4px_20px_-4px_rgba(20,184,166,0.15)] shadow-sm'}`}
-                                                >
-                                                    <div className="p-5 flex-1 flex flex-col">
-                                                        {/* Card Header */}
-                                                        <div className="flex justify-between items-start mb-3">
-                                                            <div>
-                                                                <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-1 group-hover:text-kilo-600 dark:group-hover:text-kilo-400 transition-colors">
-                                                                    {model.name || model.id}
-                                                                </h2>
-                                                                <div className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{model.id}</div>
-                                                            </div>
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200 border border-gray-200 dark:border-slate-600 whitespace-nowrap">
-                                                                {(model.providers || [model.provider_name_from_group || model.provider || 'Unknown']).join(', ')}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Tags */}
-                                                        <div className="flex flex-wrap gap-1.5 mb-4">
-                                                            {inPrice === 0 && (
-                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/50">
-                                                                    Free Input
-                                                                </span>
-                                                            )}
-                                                            {(model.architecture?.modalities || []).map(mod => (
-                                                                <span key={mod} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100/80 text-gray-600 dark:bg-slate-700/50 dark:text-gray-300 text-xs border border-gray-200 dark:border-slate-600 capitalize">
-                                                                    {getModalityIcon(mod)} {mod}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-
-                                                        {/* Description */}
-                                                        <div className={`text-sm text-gray-600 dark:text-gray-400 mb-6 flex-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
-                                                            {model.description || "No description available."}
-                                                        </div>
-
-                                                        {/* Stats Footer */}
-                                                        <div className="mt-auto grid grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-750">
-                                                            <div className="flex flex-col px-2 border-r border-gray-200 dark:border-slate-700">
-                                                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">Context</span>
-                                                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">{formatContextWindow(model.context_length)}</span>
-                                                            </div>
-                                                            <div className="flex flex-col px-2 border-r border-gray-200 dark:border-slate-700">
-                                                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">In / 1M</span>
-                                                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">${inPrice.toFixed(2)}</span>
-                                                            </div>
-                                                            <div className="flex flex-col px-2">
-                                                                <span className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-0.5 text-center">Out / 1M</span>
-                                                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 text-center">${outPrice.toFixed(2)}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Expanded JSON View */}
-                                                    {isExpanded && (
-                                                        <div className="border-t border-gray-200 dark:border-slate-700 bg-gray-900 relative">
-                                                            <div className="absolute top-2 right-2 flex items-center">
-                                                                {copiedId === model.id ? (
-                                                                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-medium cursor-default">
-                                                                        <Icons.Check /> Copied
-                                                                    </button>
-                                                                ) : (
-                                                                    <button
-                                                                        onClick={(e) => handleCopy(e, JSON.stringify(model, null, 2), model.id)}
-                                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 text-gray-300 hover:bg-slate-700 hover:text-white border border-slate-700 transition-colors text-xs font-medium"
-                                                                    >
-                                                                        <Icons.Copy /> Copy JSON
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                            <pre className="p-4 pt-12 overflow-x-auto text-[11px] font-mono text-gray-300 custom-scrollbar max-h-96">
-                                                                {JSON.stringify(model, null, 2)}
-                                                            </pre>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                        {filteredAndSortedModels.map(model => (
+                                            <ModelCard
+                                                key={model.id}
+                                                model={model}
+                                                expandedId={expandedId}
+                                                setExpandedId={setExpandedId}
+                                                handleCopy={handleCopy}
+                                                copiedId={copiedId}
+                                            />
+                                        ))}
                                     </div>
 
                                     {filteredAndSortedModels.length === 0 && (
