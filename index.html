@@ -272,14 +272,27 @@
                         let flatData = [];
                         if (data.providers && Array.isArray(data.providers)) {
                             const modelMap = new Map();
+                            const extractPricing = (m) => {
+                                const raw = m.endpoint?.pricing || m.pricing || {};
+                                const promptVal = parseFloat(raw.prompt || raw.input || 0);
+                                const completionVal = parseFloat(raw.completion || raw.output || 0);
+                                // If values look like per-token (very small), convert to per-1M
+                                const needsConversion = (promptVal > 0 && promptVal < 0.01) || (completionVal > 0 && completionVal < 0.01);
+                                const multiplier = needsConversion ? 1000000 : 1;
+                                return {
+                                    prompt: String(promptVal * multiplier),
+                                    completion: String(completionVal * multiplier)
+                                };
+                            };
                             data.providers.forEach(p => {
                                 (p.models || []).forEach(m => {
                                     const uid = m.slug || m.name || m.id;
+                                    const enrichedModel = { ...m, pricing: extractPricing(m) };
                                     if (!modelMap.has(uid)) {
-                                        modelMap.set(uid, { ...m, id: uid, providerData: { [p.name]: m }, providers: [p.name] });
+                                        modelMap.set(uid, { ...enrichedModel, id: uid, providerData: { [p.name]: enrichedModel }, providers: [p.name] });
                                     } else {
                                         const existing = modelMap.get(uid);
-                                        existing.providerData[p.name] = m;
+                                        existing.providerData[p.name] = enrichedModel;
                                         if (!existing.providers.includes(p.name)) {
                                             existing.providers.push(p.name);
                                             existing.providers.sort();
