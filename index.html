@@ -322,7 +322,7 @@
             useEffect(() => {
                 const fetchModels = async () => {
                     try {
-                        const res = await fetch('https://corsproxy.io/?https://api.kilo.ai/api/gateway/models');
+                        const res = await fetch('https://api.codetabs.com/v1/proxy/?quest=https://api.kilo.ai/api/gateway/models');
                         if (!res.ok) throw new Error('API request failed');
                         const data = await res.json();
 
