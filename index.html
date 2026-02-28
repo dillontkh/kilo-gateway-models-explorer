@@ -333,6 +333,67 @@
                 return Array.from(p).sort();
             }, [models]);
 
+            // Models filtered by everything EXCEPT provider selection (used to derive visible providers)
+            const searchFilteredModels = useMemo(() => {
+                let result = models;
+
+                if (globalSearch) {
+                    const q = globalSearch.toLowerCase();
+                    result = result.filter(m =>
+                        (m.name || '').toLowerCase().includes(q) ||
+                        (m.id || '').toLowerCase().includes(q) ||
+                        (m.description || '').toLowerCase().includes(q) ||
+                        (m.providers || []).join(' ').toLowerCase().includes(q)
+                    );
+                }
+
+                if (selectedModalities.size > 0) {
+                    result = result.filter(m => {
+                        const mMods = (m.architecture?.modalities || []).map(x => x.toLowerCase());
+                        return Array.from(selectedModalities).every(mod => mMods.includes(mod));
+                    });
+                }
+
+                if (contextRange !== 'all') {
+                    result = result.filter(m => {
+                        return m.providers.some(p => {
+                            const pm = m.providerData?.[p] || m;
+                            const ctx = parseInt(pm.context_length || 0, 10);
+                            if (contextRange === '<32k') return ctx < 32000;
+                            if (contextRange === '32k-128k') return ctx >= 32000 && ctx <= 128000;
+                            if (contextRange === '128k-256k') return ctx > 128000 && ctx <= 256000;
+                            if (contextRange === '>256k') return ctx > 256000;
+                            return true;
+                        });
+                    });
+                }
+
+                result = result.filter(m => {
+                    const providerPrices = m.providers.map(p => {
+                        const pm = m.providerData?.[p] || m;
+                        return {
+                            in: parseFloat(pm.pricing?.prompt || pm.pricing?.input || 0),
+                            out: parseFloat(pm.pricing?.completion || pm.pricing?.output || 0)
+                        };
+                    });
+                    return providerPrices.some(prices => {
+                        if (pricing.inMin && prices.in < parseFloat(pricing.inMin)) return false;
+                        if (pricing.inMax && prices.in > parseFloat(pricing.inMax)) return false;
+                        if (pricing.outMin && prices.out < parseFloat(pricing.outMin)) return false;
+                        if (pricing.outMax && prices.out > parseFloat(pricing.outMax)) return false;
+                        return true;
+                    });
+                });
+
+                return result;
+            }, [models, globalSearch, selectedModalities, contextRange, pricing]);
+
+            // Providers visible in sidebar — only those present in search-filtered results
+            const visibleProviders = useMemo(() => {
+                const p = new Set(searchFilteredModels.flatMap(m => m.providers || [m.provider_name_from_group || m.provider || 'Unknown']));
+                return Array.from(p).sort();
+            }, [searchFilteredModels]);
+
             const allModalities = useMemo(() => {
                 const m = new Set();
                 models.forEach(model => {
@@ -533,7 +594,7 @@
                                         onChange={e => setProviderSearch(e.target.value)}
                                     />
                                     <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                                        {allProviders.filter(p => p.toLowerCase().includes(providerSearch.toLowerCase())).map(prov => (
+                                        {visibleProviders.filter(p => p.toLowerCase().includes(providerSearch.toLowerCase())).map(prov => (
                                             <label key={prov} className="flex items-center gap-2 cursor-pointer group" onClick={() => toggleProvider(prov)}>
                                                 <div className="flex-shrink-0">
                                                     {selectedProviders.has(prov) ? <Icons.CheckboxChecked /> : <Icons.CheckboxUnchecked />}
