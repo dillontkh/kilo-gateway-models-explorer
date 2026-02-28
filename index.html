@@ -287,6 +287,7 @@
             const [selectedModalities, setSelectedModalities] = useState(new Set());
             const [contextRange, setContextRange] = useState('all');
             const [pricing, setPricing] = useState({ inMin: '', inMax: '', outMin: '', outMax: '' });
+            const [freeOnly, setFreeOnly] = useState(false);
 
             // Sort
             const [sortOption, setSortOption] = useState('name-asc');
@@ -570,6 +571,7 @@
                     });
 
                     return providerPrices.some(prices => {
+                        if (freeOnly && (prices.in !== 0 || prices.out !== 0)) return false;
                         if (pricing.inMin && prices.in < parseFloat(pricing.inMin)) return false;
                         if (pricing.inMax && prices.in > parseFloat(pricing.inMax)) return false;
                         if (pricing.outMin && prices.out < parseFloat(pricing.outMin)) return false;
@@ -609,7 +611,18 @@
                 });
 
                 return result;
-            }, [models, globalSearch, selectedProviders, selectedModalities, contextRange, pricing, sortOption]);
+            }, [models, globalSearch, selectedProviders, selectedModalities, contextRange, pricing, freeOnly, sortOption]);
+
+            const hasActiveFilters = globalSearch || selectedProviders.size > 0 || selectedModalities.size > 0 || contextRange !== 'all' || pricing.inMin || pricing.inMax || pricing.outMin || pricing.outMax || freeOnly;
+
+            const clearAllFilters = () => {
+                setGlobalSearch('');
+                setSelectedProviders(new Set());
+                setSelectedModalities(new Set());
+                setContextRange('all');
+                setPricing({ inMin: '', inMax: '', outMin: '', outMax: '' });
+                setFreeOnly(false);
+            };
 
             // Handlers
             const toggleProvider = (p) => {
@@ -688,6 +701,17 @@
                         <aside className="w-64 flex-shrink-0 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-y-auto custom-scrollbar hidden md:block pb-10">
                             <div className="p-4 space-y-8">
 
+                                {/* Clear Filters Button */}
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearAllFilters}
+                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-kilo-500/10 text-kilo-600 dark:text-kilo-400 border border-kilo-500/30 hover:bg-kilo-500/20 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        Clear All Filters
+                                    </button>
+                                )}
+
                                 {/* Providers Filter */}
                                 <div>
                                     <div className="flex items-center justify-between mb-3">
@@ -759,7 +783,7 @@
 
                                 {/* Pricing Filter */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Pricing (/ 1M tokens)</h3>
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3">Pricing (1M TOKENS)</h3>
                                     <div className="space-y-4">
                                         <div>
                                             <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Input Price</label>
@@ -775,6 +799,19 @@
                                                 <input type="number" placeholder="Max" value={pricing.outMax} onChange={e => setPricing({ ...pricing, outMax: e.target.value })} className="w-full px-2 py-1 text-sm bg-transparent border border-gray-300 dark:border-slate-700 rounded focus:ring-1 focus:ring-kilo-500" />
                                             </div>
                                         </div>
+                                        {/* Free Only Toggle */}
+                                        <label className="flex items-center gap-2.5 cursor-pointer group mt-1" htmlFor="free-only-toggle">
+                                            <div
+                                                onClick={() => setFreeOnly(!freeOnly)}
+                                                id="free-only-toggle"
+                                                className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors flex-shrink-0 ${freeOnly ? 'bg-kilo-500' : 'bg-gray-300 dark:bg-slate-600'}`}
+                                            >
+                                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${freeOnly ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                            </div>
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-kilo-600 dark:group-hover:text-kilo-400 select-none transition-colors">
+                                                Free only
+                                            </span>
+                                        </label>
                                     </div>
                                 </div>
 
