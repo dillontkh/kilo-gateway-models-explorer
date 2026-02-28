@@ -822,9 +822,8 @@
                                             </div>
                                         </div>
                                         {/* Free Only Toggle */}
-                                        <label className="flex items-center gap-2.5 cursor-pointer group mt-1" htmlFor="free-only-toggle">
+                                        <label className="flex items-center gap-2.5 cursor-pointer group mt-1" onClick={() => setFreeOnly(!freeOnly)}>
                                             <div
-                                                onClick={() => setFreeOnly(!freeOnly)}
                                                 id="free-only-toggle"
                                                 className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors flex-shrink-0 ${freeOnly ? 'bg-kilo-500' : 'bg-gray-300 dark:bg-slate-600'}`}
                                             >
