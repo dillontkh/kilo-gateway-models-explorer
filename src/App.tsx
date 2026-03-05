@@ -64,6 +64,31 @@ const App = () => {
                         });
                     });
                     flatData = Array.from(modelMap.values());
+                } else {
+                    const arrayData = Array.isArray(data) ? data : (data.data && Array.isArray(data.data) ? data.data : []);
+                    flatData = arrayData.map((m: any) => {
+                        const uid = m.slug || m.name || m.id;
+                        let provider = m.provider;
+                        if (!provider && typeof uid === 'string') {
+                            if (uid.includes('/')) provider = uid.split('/')[0];
+                            else if (uid.includes(':')) provider = uid.split(':')[0];
+                            if (provider) provider = provider.charAt(0).toUpperCase() + provider.slice(1);
+                            else provider = "Kilo";
+                        } else if (!provider) {
+                            provider = "Kilo";
+                        }
+
+                        let modalities = ["text"];
+                        if (m.architecture?.input_modalities) modalities = m.architecture.input_modalities;
+                        else if (m.architecture?.modalities) modalities = m.architecture.modalities;
+
+                        const enrichedModel = {
+                            ...m,
+                            pricing: extractPricing(m.pricing),
+                            architecture: { ...m.architecture, modalities }
+                        };
+                        return { ...enrichedModel, id: uid, providerData: { [provider]: enrichedModel }, providers: [provider] };
+                    });
                 }
 
                 if (flatData.length > 0) {

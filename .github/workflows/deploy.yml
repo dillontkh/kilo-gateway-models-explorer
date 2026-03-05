@@ -2,7 +2,7 @@ name: Deploy Vite app to GitHub Pages
 
 on:
   push:
-    branches: ["refactor-react-vite"] # Adjusted to current branch for verification, usually "main" or "master"
+    branches: ["master"]
   workflow_dispatch:
 
 permissions:
