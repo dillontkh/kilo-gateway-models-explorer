@@ -43,20 +43,40 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             {model.name || model.id}
                         </h3>
-                        {hasMultipleProviders && isExpanded ? (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                        <div
+                            onClick={(e) => handleCopy(e, model.id, `${model.id}-slug`)}
+                            className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer w-fit"
+                        >
+                            <code className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 group-hover/slug:border-primary/50 group-hover/slug:text-primary dark:group-hover/slug:text-primary-light transition-all truncate max-w-[220px]">
+                                {model.id}
+                            </code>
+                            <div className="relative flex items-center">
+                                <span className="material-symbols-outlined text-[14px] text-slate-400 group-hover/slug:text-primary transition-colors">
+                                    {copiedId === `${model.id}-slug` ? 'check' : 'content_copy'}
+                                </span>
+                                {copiedId === `${model.id}-slug` && (
+                                    <span className="absolute left-6 whitespace-nowrap bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-left-1 duration-200">
+                                        Copied!
+                                    </span>
+                                )}
+                            </div>
+                            <span className="absolute -top-7 left-0 scale-0 group-hover/slug:scale-100 transition-transform origin-bottom bg-slate-800 text-white text-[9px] px-2 py-1 rounded pointer-events-none">
+                                Click to copy
+                            </span>
+                        </div>
+
+                        {hasMultipleProviders && isExpanded && (
+                            <div className="flex flex-wrap gap-1.5 mt-3">
                                 {model.providers.map((p: string) => (
                                     <button
                                         key={p}
                                         onClick={(e) => { e.stopPropagation(); setSelectedProvider(p); }}
-                                        className={`text-[10px] font-bold px-2 py-1 rounded-full border ${selectedProvider === p ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full border transition-all ${selectedProvider === p ? 'border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'}`}
                                     >
                                         {p}
                                     </button>
                                 ))}
                             </div>
-                        ) : (
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">{selectedProvider}</p>
                         )}
                     </div>
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
