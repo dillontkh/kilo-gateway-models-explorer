@@ -1,13 +1,5 @@
 import React from 'react';
-
-// Modalities mapping
-const MODALITY_ICONS: Record<string, string> = {
-    text: 'text_fields',
-    image: 'image',
-    audio: 'mic',
-    video: 'videocam',
-    file: 'description'
-};
+import { getModalityConfig } from '../utils/modalityConfig';
 
 interface SidebarProps {
     visibleProviders: string[];
@@ -90,17 +82,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <div className="flex flex-wrap gap-2">
                             {allModalities.map(mod => {
                                 const sel = selectedModalities.has(mod);
-                                const icon = MODALITY_ICONS[mod.toLowerCase()] || 'extension';
+                                const cfg = getModalityConfig(mod);
                                 return (
                                     <button
                                         key={mod}
                                         onClick={() => toggleModality(mod)}
-                                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium flex items-center gap-1.5 transition-colors ${sel
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary dark:hover:text-primary'
+                                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium flex items-center gap-1.5 transition-all capitalize ${sel
+                                                ? cfg.selectedClasses
+                                                : `border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:${cfg.selectedClasses}`
                                             }`}
                                     >
-                                        <span className="material-symbols-outlined text-sm">{icon}</span> {mod}
+                                        <span className="material-symbols-outlined text-sm">{cfg.icon}</span> {mod}
                                     </button>
                                 );
                             })}

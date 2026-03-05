@@ -1,4 +1,5 @@
 import React from 'react';
+import { getModalityConfig } from '../utils/modalityConfig';
 
 const formatContextWindow = (ctx: any) => {
     if (!ctx) return "N/A";
@@ -69,11 +70,15 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                             Free Input
                         </span>
                     )}
-                    {(model.architecture?.modalities || []).map((mod: string) => (
-                        <span key={mod} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize border border-slate-200 dark:border-slate-700">
-                            {mod}
-                        </span>
-                    ))}
+                    {(model.architecture?.modalities || []).map((mod: string) => {
+                        const cfg = getModalityConfig(mod);
+                        return (
+                            <span key={mod} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold capitalize border ${cfg.classes}`}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>{cfg.icon}</span>
+                                {mod}
+                            </span>
+                        );
+                    })}
                 </div>
                 <p className={`text-sm text-slate-600 dark:text-slate-400 ${isExpanded ? '' : 'line-clamp-3'}`}>
                     {model.description || "No description available."}
