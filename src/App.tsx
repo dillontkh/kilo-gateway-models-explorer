@@ -23,7 +23,8 @@ const App = () => {
     const [contextRange, setContextRange] = useState('all');
     const [pricing, setPricing] = useState({ inMin: '', inMax: '', outMin: '', outMax: '' });
     const [freeOnly, setFreeOnly] = useState(false);
-    const [sortOption, setSortOption] = useState('name-asc');
+    const [sortField, setSortField] = useState('name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
     // UI State
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -194,16 +195,47 @@ const App = () => {
         });
 
         result.sort((a, b) => {
-            const nameA = a.name || ''; const nameB = b.name || '';
-            switch (sortOption) {
-                case 'name-asc': return nameA.localeCompare(nameB);
-                case 'name-desc': return nameB.localeCompare(nameA);
-                default: return 0; // Simplified
+            let comparison = 0;
+            switch (sortField) {
+                case 'price': {
+                    const getMinPrice = (model: any) => {
+                        const prices = (model.providers || []).map((p: string) => {
+                            const pm = model.providerData?.[p] || model;
+                            return parseFloat(pm.pricing?.prompt || pm.pricing?.input || 0);
+                        });
+                        return prices.length > 0 ? Math.min(...prices) : 0;
+                    };
+                    comparison = getMinPrice(a) - getMinPrice(b);
+                    if (comparison === 0) {
+                        comparison = (a.name || '').localeCompare(b.name || '');
+                    }
+                    break;
+                }
+                case 'context': {
+                    const getMaxContext = (model: any) => {
+                        const contexts = (model.providers || []).map((p: string) => {
+                            const pm = model.providerData?.[p] || model;
+                            return parseInt(pm.context_length || 0, 10);
+                        });
+                        return contexts.length > 0 ? Math.max(...contexts) : 0;
+                    };
+                    comparison = getMaxContext(a) - getMaxContext(b);
+                    if (comparison === 0) {
+                        comparison = (a.name || '').localeCompare(b.name || '');
+                    }
+                    break;
+                }
+                case 'name':
+                default:
+                    comparison = (a.name || '').localeCompare(b.name || '');
+                    break;
             }
+
+            return sortDirection === 'asc' ? comparison : -comparison;
         });
 
         return result;
-    }, [searchFilteredModels, selectedProviders, pricing, freeOnly, sortOption]);
+    }, [searchFilteredModels, selectedProviders, pricing, freeOnly, sortField, sortDirection]);
 
     const toggleProvider = (p: string) => {
         const next = new Set(selectedProviders);
@@ -278,15 +310,25 @@ const App = () => {
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">API Models</h2>
                                     <p className="text-slate-500 dark:text-slate-400 mt-1">Showing {filteredAndSortedModels.length} results</p>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500 dark:text-slate-400">Sort by:</span>
                                     <select
-                                        value={sortOption} onChange={e => setSortOption(e.target.value)}
-                                        className="block w-full pl-3 pr-10 py-2 text-base border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white cursor-pointer"
+                                        value={sortField} onChange={e => setSortField(e.target.value)}
+                                        className="block w-full pl-3 pr-8 py-2 text-base border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white cursor-pointer"
                                     >
-                                        <option value="name-asc">Name (A-Z)</option>
-                                        <option value="name-desc">Name (Z-A)</option>
+                                        <option value="name">Name</option>
+                                        <option value="price">Price (Input)</option>
+                                        <option value="context">Context Window</option>
                                     </select>
+                                    <button
+                                        onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                        className="p-2 ml-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary inline-flex items-center justify-center transition-colors"
+                                        title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-lg">
+                                            {sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
 
