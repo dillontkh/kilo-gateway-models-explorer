@@ -42,6 +42,7 @@ const App = () => {
     // UI State
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     const fetchModels = useCallback(async (skipCache: boolean = false) => {
         const CACHE_KEY = 'kilo_models';
@@ -140,6 +141,19 @@ const App = () => {
     useEffect(() => {
         fetchModels();
     }, [fetchModels]);
+
+    useEffect(() => {
+        const main = document.querySelector('main');
+        const handleScroll = () => {
+            setShowScrollTop((main?.scrollTop || 0) > 300);
+        };
+        main?.addEventListener('scroll', handleScroll);
+        return () => main?.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const handleRefresh = () => {
         clearCache('kilo_models');
@@ -403,6 +417,15 @@ const App = () => {
                                         />
                                     ))}
                                 </div>
+                            )}
+                            {showScrollTop && (
+                                <button
+                                    onClick={scrollToTop}
+                                    className="fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900 flex items-center justify-center"
+                                    aria-label="Jump to top"
+                                >
+                                    <span className="material-symbols-outlined">arrow_upward</span>
+                                </button>
                             )}
                         </>
                     )}
