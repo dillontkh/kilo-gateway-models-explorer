@@ -47,7 +47,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                             onClick={(e) => handleCopy(e, model.id, `${model.id}-slug`)}
                             className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer w-fit"
                         >
-                            <code className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 group-hover/slug:border-primary/50 group-hover/slug:text-primary dark:group-hover/slug:text-primary-light transition-all truncate max-w-[220px]">
+                            <code className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 group-hover/slug:border-primary/50 group-hover/slug:text-primary dark:group-hover/slug:text-primary-light transition-all block truncate max-w-[220px]">
                                 {model.id}
                             </code>
                             <div className="relative flex items-center">

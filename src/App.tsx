@@ -49,7 +49,7 @@ const App = () => {
                     const modelMap = new Map();
                     data.providers.forEach((p: any) => {
                         (p.models || []).forEach((m: any) => {
-                            const uid = m.slug || m.name || m.id;
+                            const uid = m.slug || m.id || m.name;
                             const enrichedModel = { ...m, pricing: extractPricing(m.endpoint?.pricing || m.pricing) };
                             if (!modelMap.has(uid)) {
                                 modelMap.set(uid, { ...enrichedModel, id: uid, providerData: { [p.name]: enrichedModel }, providers: [p.name] });
@@ -67,7 +67,7 @@ const App = () => {
                 } else {
                     const arrayData = Array.isArray(data) ? data : (data.data && Array.isArray(data.data) ? data.data : []);
                     flatData = arrayData.map((m: any) => {
-                        const uid = m.slug || m.name || m.id;
+                        const uid = m.slug || m.id || m.name;
                         let provider = m.provider;
                         if (!provider && typeof uid === 'string') {
                             if (uid.includes('/')) provider = uid.split('/')[0];
@@ -99,7 +99,7 @@ const App = () => {
             } catch (err) {
                 console.error("Fetch failed, using mock data", err);
                 setModels(MOCK_MODELS.map((m: any) => {
-                    const uid = m.slug || m.name || m.id;
+                    const uid = m.slug || m.id || m.name;
                     return { ...m, id: uid, providerData: { [m.provider_name_from_group]: m }, providers: [m.provider_name_from_group] };
                 }));
                 setFallbackStatus(true);
