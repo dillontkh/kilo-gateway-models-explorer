@@ -28,6 +28,9 @@ interface SidebarProps {
 
     freeOnly: boolean;
     setFreeOnly: (f: boolean) => void;
+
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (o: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -35,11 +38,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     allModalities, selectedModalities, toggleModality,
     contextRange, setContextRange,
     pricing, setPricing,
-    freeOnly, setFreeOnly
+    freeOnly, setFreeOnly,
+    isSidebarOpen, setIsSidebarOpen
 }) => {
     return (
-        <aside className="w-72 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 overflow-y-auto hidden md:block bg-white/50 dark:bg-slate-900/20 custom-scrollbar">
-            <div className="p-6 space-y-8">
+        <aside className={`w-72 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 overflow-y-auto bg-white/95 dark:bg-slate-900/95 custom-scrollbar backdrop-blur-xl md:backdrop-blur-none fixed inset-y-0 left-0 md:relative md:inset-auto z-50 h-screen md:h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0 shadow-2xl md:shadow-none' : '-translate-x-full md:translate-x-0'} md:block`}>
+            <div className="p-4 md:p-6 space-y-8 pb-32">
+                <div className="md:hidden flex justify-end">
+                    <button onClick={() => setIsSidebarOpen(false)} className="p-2 -mr-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
                 {/* Providers */}
                 <section>
                     <div className="flex items-center justify-between mb-4">
@@ -87,8 +96,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                         key={mod}
                                         onClick={() => toggleModality(mod)}
                                         className={`px-3 py-1.5 rounded-lg border text-sm font-medium flex items-center gap-1.5 transition-colors ${sel
-                                                ? 'border-primary bg-primary/10 text-primary'
-                                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary dark:hover:text-primary'
+                                            ? 'border-primary bg-primary/10 text-primary'
+                                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary dark:hover:text-primary'
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-sm">{icon}</span> {mod}

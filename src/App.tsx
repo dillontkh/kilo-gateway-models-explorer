@@ -233,9 +233,11 @@ const App = () => {
         document.body.removeChild(textArea);
     };
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     return (
         <div className="flex flex-col h-screen overflow-hidden">
-            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} setDarkMode={setDarkMode} />
+            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} setDarkMode={setDarkMode} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
 
             {fallbackStatus && (
                 <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-4 py-2 text-sm flex items-center gap-2 justify-center flex-shrink-0">
@@ -244,7 +246,15 @@ const App = () => {
                 </div>
             )}
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile overlay */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
+
                 <Sidebar
                     visibleProviders={visibleProviders} selectedProviders={selectedProviders} toggleProvider={toggleProvider}
                     providerSearch={providerSearch} setProviderSearch={setProviderSearch}
@@ -252,9 +262,10 @@ const App = () => {
                     contextRange={contextRange} setContextRange={setContextRange}
                     pricing={pricing} setPricing={setPricing}
                     freeOnly={freeOnly} setFreeOnly={setFreeOnly}
+                    isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}
                 />
 
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative">
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar relative">
                     {loading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -262,6 +273,7 @@ const App = () => {
                     ) : (
                         <>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+
                                 <div>
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">API Models</h2>
                                     <p className="text-slate-500 dark:text-slate-400 mt-1">Showing {filteredAndSortedModels.length} results</p>
