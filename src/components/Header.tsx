@@ -1,4 +1,5 @@
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 interface HeaderProps {
     globalSearch: string;
@@ -9,9 +10,11 @@ interface HeaderProps {
     setIsSidebarOpen: (o: boolean) => void;
     freeOnly: boolean;
     setFreeOnly: (f: boolean) => void;
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, handleThemeToggle, isSidebarOpen, setIsSidebarOpen, freeOnly, setFreeOnly }) => {
+export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, handleThemeToggle, isSidebarOpen, setIsSidebarOpen, freeOnly, setFreeOnly, onRefresh, isRefreshing }) => {
     return (
         <header className="glass-panel sticky top-0 z-40 px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between border-b gap-3 md:gap-0 border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
             <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -30,6 +33,17 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                 </div>
 
                 <div className="flex items-center gap-1 ml-auto sm:hidden">
+            {onRefresh && (
+                    <Tooltip content="Model data is cached for 10 minutes locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
+                        <button
+                            onClick={onRefresh}
+                            disabled={isRefreshing}
+                            className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+                        </button>
+                    </Tooltip>
+                )}
                     <button
                         onClick={() => setFreeOnly(!freeOnly)}
                         className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none ${freeOnly
@@ -65,6 +79,17 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
             </div>
 
             <div className="hidden sm:flex items-center gap-3">
+                {onRefresh && (
+                        <Tooltip content="Model data is cached for 10 minutes locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
+                            <button
+                                onClick={onRefresh}
+                                disabled={isRefreshing}
+                                className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+                            </button>
+                        </Tooltip>
+                    )}
                 <button
                     onClick={() => setFreeOnly(!freeOnly)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none ${freeOnly

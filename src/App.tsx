@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ModelCard } from './components/ModelCard';
+import { getCachedData, setCachedData, isCacheValid, clearCache } from './utils/apiCache';
 
 const MOCK_MODELS = [
     { id: "kilo-auto-v1", name: "Kilo Auto router", description: "Automatically routes requests to the most efficient model based on prompt complexity.", provider_name_from_group: "Kilo AI", context_length: 128000, pricing: { prompt: "0.50", completion: "1.50" }, architecture: { modalities: ["text", "image"] } },
@@ -12,6 +13,7 @@ const MOCK_MODELS = [
 const App = () => {
     const [models, setModels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [fallbackStatus, setFallbackStatus] = useState(false);
     // Check for saved user preference first, then fall back to system preference
     const getInitialTheme = () => {
@@ -41,86 +43,108 @@ const App = () => {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchModels = async () => {
-            try {
-                const res = await fetch('https://api.codetabs.com/v1/proxy/?quest=https://api.kilo.ai/api/gateway/models');
-                if (!res.ok) throw new Error('API request failed');
-                const data = await res.json();
+    const fetchModels = useCallback(async (skipCache: boolean = false) => {
+        const CACHE_KEY = 'kilo_models';
+        setIsRefreshing(true);
 
-                let flatData: any[] = [];
-                const extractPricing = (raw: any) => {
-                    const promptVal = parseFloat(raw?.prompt || raw?.input || 0);
-                    const completionVal = parseFloat(raw?.completion || raw?.output || 0);
-                    const needsConversion = (promptVal > 0 && promptVal < 0.01) || (completionVal > 0 && completionVal < 0.01);
-                    const multiplier = needsConversion ? 1000000 : 1;
-                    return { prompt: String(promptVal * multiplier), completion: String(completionVal * multiplier) };
-                };
-
-                if (data.providers && Array.isArray(data.providers)) {
-                    const modelMap = new Map();
-                    data.providers.forEach((p: any) => {
-                        (p.models || []).forEach((m: any) => {
-                            const uid = m.slug || m.id || m.name;
-                            const enrichedModel = { ...m, pricing: extractPricing(m.endpoint?.pricing || m.pricing) };
-                            if (!modelMap.has(uid)) {
-                                modelMap.set(uid, { ...enrichedModel, id: uid, providerData: { [p.name]: enrichedModel }, providers: [p.name] });
-                            } else {
-                                const existing = modelMap.get(uid);
-                                existing.providerData[p.name] = enrichedModel;
-                                if (!existing.providers.includes(p.name)) {
-                                    existing.providers.push(p.name);
-                                    existing.providers.sort();
-                                }
-                            }
-                        });
-                    });
-                    flatData = Array.from(modelMap.values());
-                } else {
-                    const arrayData = Array.isArray(data) ? data : (data.data && Array.isArray(data.data) ? data.data : []);
-                    flatData = arrayData.map((m: any) => {
-                        const uid = m.slug || m.id || m.name;
-                        let provider = m.provider;
-                        if (!provider && typeof uid === 'string') {
-                            if (uid.includes('/')) provider = uid.split('/')[0];
-                            else if (uid.includes(':')) provider = uid.split(':')[0];
-                            if (provider) provider = provider.charAt(0).toUpperCase() + provider.slice(1);
-                            else provider = "Kilo";
-                        } else if (!provider) {
-                            provider = "Kilo";
-                        }
-
-                        let modalities = ["text"];
-                        if (m.architecture?.input_modalities) modalities = m.architecture.input_modalities;
-                        else if (m.architecture?.modalities) modalities = m.architecture.modalities;
-
-                        const enrichedModel = {
-                            ...m,
-                            pricing: extractPricing(m.pricing),
-                            architecture: { ...m.architecture, modalities }
-                        };
-                        return { ...enrichedModel, id: uid, providerData: { [provider]: enrichedModel }, providers: [provider] };
-                    });
+        try {
+            // Check if cache is valid (unless skipping cache)
+            if (!skipCache && isCacheValid(CACHE_KEY)) {
+                const cachedData = getCachedData(CACHE_KEY);
+                if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+                    setModels(cachedData);
+                    setLoading(false);
+                    return;
                 }
-
-                if (flatData.length > 0) {
-                    setModels(flatData);
-                } else {
-                    throw new Error("No array found");
-                }
-            } catch (err) {
-                console.error("Fetch failed, using mock data", err);
-                setModels(MOCK_MODELS.map((m: any) => {
-                    const uid = m.slug || m.id || m.name;
-                    return { ...m, id: uid, providerData: { [m.provider_name_from_group]: m }, providers: [m.provider_name_from_group] };
-                }));
-                setFallbackStatus(true);
-            } finally {
-                setLoading(false);
             }
-        };
-        fetchModels();
+
+            const res = await fetch('https://api.codetabs.com/v1/proxy/?quest=https://api.kilo.ai/api/gateway/models');
+            if (!res.ok) throw new Error('API request failed');
+            const data = await res.json();
+
+            let flatData: any[] = [];
+            const extractPricing = (raw: any) => {
+                const promptVal = parseFloat(raw?.prompt || raw?.input || 0);
+                const completionVal = parseFloat(raw?.completion || raw?.output || 0);
+                const needsConversion = (promptVal > 0 && promptVal < 0.01) || (completionVal > 0 && completionVal < 0.01);
+                const multiplier = needsConversion ? 1000000 : 1;
+                return { prompt: String(promptVal * multiplier), completion: String(completionVal * multiplier) };
+            };
+
+            if (data.providers && Array.isArray(data.providers)) {
+                const modelMap = new Map();
+                data.providers.forEach((p: any) => {
+                    (p.models || []).forEach((m: any) => {
+                        const uid = m.slug || m.id || m.name;
+                        const enrichedModel = { ...m, pricing: extractPricing(m.endpoint?.pricing || m.pricing) };
+                        if (!modelMap.has(uid)) {
+                            modelMap.set(uid, { ...enrichedModel, id: uid, providerData: { [p.name]: enrichedModel }, providers: [p.name] });
+                        } else {
+                            const existing = modelMap.get(uid);
+                            existing.providerData[p.name] = enrichedModel;
+                            if (!existing.providers.includes(p.name)) {
+                                existing.providers.push(p.name);
+                                existing.providers.sort();
+                            }
+                        }
+                    });
+                });
+                flatData = Array.from(modelMap.values());
+            } else {
+                const arrayData = Array.isArray(data) ? data : (data.data && Array.isArray(data.data) ? data.data : []);
+                flatData = arrayData.map((m: any) => {
+                    const uid = m.slug || m.id || m.name;
+                    let provider = m.provider;
+                    if (!provider && typeof uid === 'string') {
+                        if (uid.includes('/')) provider = uid.split('/')[0];
+                        else if (uid.includes(':')) provider = uid.split(':')[0];
+                        if (provider) provider = provider.charAt(0).toUpperCase() + provider.slice(1);
+                        else provider = "Kilo";
+                    } else if (!provider) {
+                        provider = "Kilo";
+                    }
+
+                    let modalities = ["text"];
+                    if (m.architecture?.input_modalities) modalities = m.architecture.input_modalities;
+                    else if (m.architecture?.modalities) modalities = m.architecture.modalities;
+
+                    const enrichedModel = {
+                        ...m,
+                        pricing: extractPricing(m.pricing),
+                        architecture: { ...m.architecture, modalities }
+                    };
+                    return { ...enrichedModel, id: uid, providerData: { [provider]: enrichedModel }, providers: [provider] };
+                });
+            }
+
+            if (flatData.length > 0) {
+                setModels(flatData);
+                // Cache the successful result
+                setCachedData(CACHE_KEY, flatData);
+            } else {
+                throw new Error("No array found");
+            }
+        } catch (err) {
+            console.error("Fetch failed, using mock data", err);
+            setModels(MOCK_MODELS.map((m: any) => {
+                const uid = m.slug || m.id || m.name;
+                return { ...m, id: uid, providerData: { [m.provider_name_from_group]: m }, providers: [m.provider_name_from_group] };
+            }));
+            setFallbackStatus(true);
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchModels();
+    }, [fetchModels]);
+
+    const handleRefresh = () => {
+        clearCache('kilo_models');
+        fetchModels(true);
+    };
 
     useEffect(() => {
         if (darkMode) document.documentElement.classList.add('dark');
@@ -290,7 +314,7 @@ const App = () => {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden">
-            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} handleThemeToggle={handleThemeToggle} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} freeOnly={freeOnly} setFreeOnly={setFreeOnly} />
+            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} handleThemeToggle={handleThemeToggle} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} freeOnly={freeOnly} setFreeOnly={setFreeOnly} onRefresh={handleRefresh} isRefreshing={isRefreshing} />
 
             {fallbackStatus && (
                 <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-4 py-2 text-sm flex items-center gap-2 justify-center flex-shrink-0">
