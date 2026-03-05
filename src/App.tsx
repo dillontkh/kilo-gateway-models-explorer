@@ -237,7 +237,7 @@ const App = () => {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden">
-            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} setDarkMode={setDarkMode} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} />
+            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} setDarkMode={setDarkMode} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} freeOnly={freeOnly} setFreeOnly={setFreeOnly} />
 
             {fallbackStatus && (
                 <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-4 py-2 text-sm flex items-center gap-2 justify-center flex-shrink-0">

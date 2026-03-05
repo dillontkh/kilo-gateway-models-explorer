@@ -7,9 +7,11 @@ interface HeaderProps {
     setDarkMode: (d: boolean) => void;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (o: boolean) => void;
+    freeOnly: boolean;
+    setFreeOnly: (f: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, setDarkMode, isSidebarOpen, setIsSidebarOpen }) => {
+export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, setDarkMode, isSidebarOpen, setIsSidebarOpen, freeOnly, setFreeOnly }) => {
     return (
         <header className="glass-panel sticky top-0 z-40 px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between border-b gap-3 md:gap-0 border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
             <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -27,7 +29,17 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                     <h1 className="text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden lg:block whitespace-nowrap">Kilo Models</h1>
                 </div>
 
-                <div className="flex items-center ml-auto sm:hidden">
+                <div className="flex items-center gap-1 ml-auto sm:hidden">
+                    <button
+                        onClick={() => setFreeOnly(!freeOnly)}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none ${freeOnly
+                                ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        <span className="material-symbols-outlined text-sm">sell</span>
+                        Free
+                    </button>
                     <button
                         onClick={() => setDarkMode(!darkMode)}
                         className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
@@ -52,7 +64,17 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                 </div>
             </div>
 
-            <div className="hidden sm:flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-3">
+                <button
+                    onClick={() => setFreeOnly(!freeOnly)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none ${freeOnly
+                            ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                >
+                    <span className="material-symbols-outlined text-base">sell</span>
+                    Free only
+                </button>
                 <button
                     onClick={() => setDarkMode(!darkMode)}
                     className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
