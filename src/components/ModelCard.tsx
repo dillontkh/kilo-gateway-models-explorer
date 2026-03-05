@@ -79,9 +79,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                             </div>
                         )}
                     </div>
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <span className="material-symbols-outlined">{model.architecture?.modalities?.includes('image') ? 'image' : 'bolt'}</span>
-                    </div>
                 </div>
 
                 <div className="flex gap-2 mb-4 flex-wrap">
