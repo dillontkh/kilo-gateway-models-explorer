@@ -13,7 +13,18 @@ const App = () => {
     const [models, setModels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [fallbackStatus, setFallbackStatus] = useState(false);
-    const [darkMode, setDarkMode] = useState(true);
+    // Check for saved user preference first, then fall back to system preference
+    const getInitialTheme = () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+        // Follow system preference
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    };
+
+    const [darkMode, setDarkMode] = useState(getInitialTheme);
+    const hasUserToggledRef = React.useRef(false);
 
     // Filters
     const [globalSearch, setGlobalSearch] = useState('');
@@ -114,6 +125,11 @@ const App = () => {
     useEffect(() => {
         if (darkMode) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
+        
+        // Only save to localStorage if user has explicitly toggled
+        if (hasUserToggledRef.current) {
+            localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+        }
     }, [darkMode]);
 
     // Derived state (Filters & Sorting logic equivalent to previous)
@@ -267,9 +283,14 @@ const App = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    const handleThemeToggle = () => {
+        hasUserToggledRef.current = true;
+        setDarkMode(!darkMode);
+    };
+
     return (
         <div className="flex flex-col h-screen overflow-hidden">
-            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} setDarkMode={setDarkMode} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} freeOnly={freeOnly} setFreeOnly={setFreeOnly} />
+            <Header globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} darkMode={darkMode} handleThemeToggle={handleThemeToggle} setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} freeOnly={freeOnly} setFreeOnly={setFreeOnly} />
 
             {fallbackStatus && (
                 <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-4 py-2 text-sm flex items-center gap-2 justify-center flex-shrink-0">

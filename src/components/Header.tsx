@@ -4,14 +4,14 @@ interface HeaderProps {
     globalSearch: string;
     setGlobalSearch: (s: string) => void;
     darkMode: boolean;
-    setDarkMode: (d: boolean) => void;
+    handleThemeToggle: () => void;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (o: boolean) => void;
     freeOnly: boolean;
     setFreeOnly: (f: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, setDarkMode, isSidebarOpen, setIsSidebarOpen, freeOnly, setFreeOnly }) => {
+export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, darkMode, handleThemeToggle, isSidebarOpen, setIsSidebarOpen, freeOnly, setFreeOnly }) => {
     return (
         <header className="glass-panel sticky top-0 z-40 px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between border-b gap-3 md:gap-0 border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
             <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                         Free
                     </button>
                     <button
-                        onClick={() => setDarkMode(!darkMode)}
+                        onClick={handleThemeToggle}
                         className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
                     >
                         <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                     Free only
                 </button>
                 <button
-                    onClick={() => setDarkMode(!darkMode)}
+                    onClick={handleThemeToggle}
                     className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
                 >
                     <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
