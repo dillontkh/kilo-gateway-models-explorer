@@ -464,7 +464,7 @@ const App = () => {
 
             <AnimatePresence>
                 {expandedId && (
-                    <motion.div key="modal-wrapper" className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div key={expandedId} exit={{ pointerEvents: "none" }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
