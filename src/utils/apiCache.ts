@@ -3,7 +3,7 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-const DEFAULT_TTL = 600000;
+const DEFAULT_TTL = 3600000;
 
 export function getCachedData<T>(key: string): T | null {
   try {
