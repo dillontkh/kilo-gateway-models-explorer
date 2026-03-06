@@ -164,7 +164,7 @@ src/
 
 ### Existing Code Patterns
 - API data uses fallback mock data when fetch fails
-- Cache uses localStorage with 10-minute TTL (600000ms)
+- Cache uses localStorage with 1-hour TTL (3600000ms)
 - Use Set for managing selected/filtered collections
 - Dark mode respects system preference initially, then user choice
 - Components use `React.FC` typing for type safety

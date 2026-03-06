@@ -33,22 +33,22 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
                 </div>
 
                 <div className="flex items-center gap-1 ml-auto sm:hidden">
-            {onRefresh && (
-                    <Tooltip content="Model data is cached for 10 minutes locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
-                        <button
-                            onClick={onRefresh}
-                            disabled={isRefreshing}
-                            className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
-                        </button>
-                    </Tooltip>
-                )}
+                    {onRefresh && (
+                        <Tooltip content="Model data is cached for 1 hour locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
+                            <button
+                                onClick={onRefresh}
+                                disabled={isRefreshing}
+                                className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+                            </button>
+                        </Tooltip>
+                    )}
                     <button
                         onClick={() => setFreeOnly(!freeOnly)}
                         className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none ${freeOnly
-                                ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
-                                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                     >
                         <span className="material-symbols-outlined text-sm">sell</span>
@@ -80,21 +80,21 @@ export const Header: React.FC<HeaderProps> = ({ globalSearch, setGlobalSearch, d
 
             <div className="hidden sm:flex items-center gap-3">
                 {onRefresh && (
-                        <Tooltip content="Model data is cached for 10 minutes locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
-                            <button
-                                onClick={onRefresh}
-                                disabled={isRefreshing}
-                                className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
-                            </button>
-                        </Tooltip>
-                    )}
+                    <Tooltip content="Model data is cached for 1 hour locally in your browser. Click to fetch fresh data from Kilo servers." position="bottom">
+                        <button
+                            onClick={onRefresh}
+                            disabled={isRefreshing}
+                            className={`p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+                        </button>
+                    </Tooltip>
+                )}
                 <button
                     onClick={() => setFreeOnly(!freeOnly)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none ${freeOnly
-                            ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
-                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                 >
                     <span className="material-symbols-outlined text-base">sell</span>
