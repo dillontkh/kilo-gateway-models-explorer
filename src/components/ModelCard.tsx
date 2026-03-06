@@ -43,12 +43,12 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                 <div className="flex items-start justify-between mb-3">
                     <div className="w-full">
                         <div className="flex justify-between items-center w-full">
-                            <motion.h3
+                            <h3
                                 layoutId={`title-${model.id}`}
                                 className={`${isModal ? 'text-2xl' : 'text-lg'} font-bold text-slate-900 dark:text-white flex items-center gap-2`}
                             >
                                 {model.name || model.id}
-                            </motion.h3>
+                            </h3>
                             {isModal && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setExpandedId(null); }}
@@ -58,7 +58,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                                 </button>
                             )}
                         </div>
-                        <motion.div
+                        <div
                             layoutId={`slug-${model.id}`}
                             onClick={(e) => handleCopy(e, model.id, `${model.id}-slug`)}
                             className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer max-w-full"
@@ -76,10 +76,10 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                                     </span>
                                 )}
                             </div>
-                        </motion.div>
+                        </div>
 
                         {hasMultipleProviders && (isModal) && (
-                            <motion.div
+                            <div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex flex-wrap gap-1.5 mt-3"
@@ -93,12 +93,12 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                                         {p}
                                     </button>
                                 ))}
-                            </motion.div>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                <motion.div layoutId={`modalities-${model.id}`} className="flex gap-2 mb-4 flex-wrap">
+                <div layoutId={`modalities-${model.id}`} className="flex gap-2 mb-4 flex-wrap">
                     {(model.architecture?.modalities || []).map((mod: string) => {
                         const cfg = getModalityConfig(mod);
                         return (
@@ -108,16 +108,16 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                             </span>
                         );
                     })}
-                </motion.div>
-                <motion.p
+                </div>
+                <p
                     layoutId={`description-${model.id}`}
                     className={`text-sm text-slate-600 dark:text-slate-400 ${isModal ? 'mb-6' : 'line-clamp-3'}`}
                 >
                     {model.description || "No description available."}
-                </motion.p>
+                </p>
 
                 {isModal && (
-                    <motion.div
+                    <div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-4 border-t border-slate-100 dark:border-slate-800/50 pt-4"
@@ -138,11 +138,11 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                         <pre className="text-[10px] font-mono p-3 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-x-auto custom-scrollbar text-slate-800 dark:text-slate-300 max-h-80">
                             {JSON.stringify(activeModelData, null, 2)}
                         </pre>
-                    </motion.div>
+                    </div>
                 )}
             </div>
 
-            <motion.div
+            <div
                 layoutId={`footer-${model.id}`}
                 className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800/50"
             >
@@ -160,7 +160,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                         <p className={`text-sm font-semibold ${outPrice === 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-slate-200'}`}>${outPrice.toFixed(2)}</p>
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </motion.div>
     );
 };
