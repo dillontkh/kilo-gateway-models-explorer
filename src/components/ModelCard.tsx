@@ -36,7 +36,8 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
         <motion.div
             layoutId={`card-${model.id}`}
             onClick={() => !isModal && setExpandedId(model.id)}
-            className={`glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer ${isModal ? 'w-full max-w-2xl max-h-[90vh] shadow-2xl z-50' : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-200'}`}
+            whileHover={!isModal ? { y: -4 } : undefined}
+            className={`glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer ${isModal ? 'w-full max-w-2xl max-h-[90vh] shadow-2xl z-50' : 'hover:shadow-xl hover:shadow-primary/5 transition-shadow duration-200'}`}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
             <div className={`p-5 flex-1 relative ${isModal ? 'overflow-y-auto custom-scrollbar' : ''}`}>

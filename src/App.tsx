@@ -464,7 +464,7 @@ const App = () => {
 
             <AnimatePresence>
                 {expandedId && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div key="modal-wrapper" className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -486,7 +486,7 @@ const App = () => {
                                 />
                             );
                         })()}
-                    </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
