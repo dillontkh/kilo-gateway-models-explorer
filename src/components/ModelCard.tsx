@@ -82,11 +82,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                 </div>
 
                 <div className="flex gap-2 mb-4 flex-wrap">
-                    {inPrice === 0 && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                            Free Input
-                        </span>
-                    )}
                     {(model.architecture?.modalities || []).map((mod: string) => {
                         const cfg = getModalityConfig(mod);
                         return (
@@ -130,11 +125,11 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                     </div>
                     <div>
                         <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-1">In / 1M</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">${inPrice.toFixed(2)}</p>
+                        <p className={`text-sm font-semibold ${inPrice === 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-slate-200'}`}>${inPrice.toFixed(2)}</p>
                     </div>
                     <div>
                         <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-1">Out / 1M</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">${outPrice.toFixed(2)}</p>
+                        <p className={`text-sm font-semibold ${outPrice === 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-slate-200'}`}>${outPrice.toFixed(2)}</p>
                     </div>
                 </div>
             </div>
