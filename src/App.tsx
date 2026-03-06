@@ -2,7 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ModelCard } from './components/ModelCard';
+import MorphingPageDots from './components/ui/morphing-page-dots';
 import { getCachedData, setCachedData, isCacheValid, clearCache } from './utils/apiCache';
+
+const MODELS_PER_PAGE = 16;
 
 const MOCK_MODELS = [
     { id: "kilo-auto-v1", name: "Kilo Auto router", description: "Automatically routes requests to the most efficient model based on prompt complexity.", provider_name_from_group: "Kilo AI", context_length: 128000, pricing: { prompt: "0.50", completion: "1.50" }, architecture: { modalities: ["text", "image"] } },
@@ -43,6 +46,7 @@ const App = () => {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
 
     const fetchModels = useCallback(async (skipCache: boolean = false) => {
         const CACHE_KEY = 'kilo_models';
@@ -163,7 +167,7 @@ const App = () => {
     useEffect(() => {
         if (darkMode) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
-        
+
         // Only save to localStorage if user has explicitly toggled
         if (hasUserToggledRef.current) {
             localStorage.setItem('theme', darkMode ? 'dark' : 'light');
@@ -291,6 +295,18 @@ const App = () => {
         return result;
     }, [searchFilteredModels, selectedProviders, pricing, freeOnly, sortField, sortDirection]);
 
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [globalSearch, selectedProviders, selectedModalities, contextRange, pricing, freeOnly, sortField, sortDirection]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredAndSortedModels.length / MODELS_PER_PAGE);
+    const paginatedModels = useMemo(() => {
+        const start = currentPage * MODELS_PER_PAGE;
+        return filteredAndSortedModels.slice(start, start + MODELS_PER_PAGE);
+    }, [filteredAndSortedModels, currentPage]);
+
     const toggleProvider = (p: string) => {
         const next = new Set(selectedProviders);
         next.has(p) ? next.delete(p) : next.add(p);
@@ -367,7 +383,9 @@ const App = () => {
 
                                 <div>
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">API Models</h2>
-                                    <p className="text-slate-500 dark:text-slate-400 mt-1">Showing {filteredAndSortedModels.length} results</p>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-1">
+                                        Showing {currentPage * MODELS_PER_PAGE + 1}–{Math.min((currentPage + 1) * MODELS_PER_PAGE, filteredAndSortedModels.length)} of {filteredAndSortedModels.length} results
+                                    </p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500 dark:text-slate-400">Sort by:</span>
@@ -408,15 +426,25 @@ const App = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12 items-start">
-                                    {filteredAndSortedModels.map(model => (
-                                        <ModelCard
-                                            key={model.id} model={model}
-                                            expandedId={expandedId} setExpandedId={setExpandedId}
-                                            handleCopy={handleCopy} copiedId={copiedId}
-                                        />
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4 items-start">
+                                        {paginatedModels.map(model => (
+                                            <ModelCard
+                                                key={model.id} model={model}
+                                                expandedId={expandedId} setExpandedId={setExpandedId}
+                                                handleCopy={handleCopy} copiedId={copiedId}
+                                            />
+                                        ))}
+                                    </div>
+                                    <MorphingPageDots
+                                        total={totalPages}
+                                        activeIndex={currentPage}
+                                        onChange={(page) => {
+                                            setCurrentPage(page);
+                                            document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                    />
+                                </>
                             )}
                             {showScrollTop && (
                                 <button
