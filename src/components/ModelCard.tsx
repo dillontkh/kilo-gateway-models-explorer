@@ -1,5 +1,6 @@
 import React from 'react';
 import { getModalityConfig } from '../utils/modalityConfig';
+import { motion } from 'framer-motion';
 
 const formatContextWindow = (ctx: any) => {
     if (!ctx) return "N/A";
@@ -11,14 +12,13 @@ const formatContextWindow = (ctx: any) => {
 
 interface ModelCardProps {
     model: any;
-    expandedId: string | null;
+    isModal?: boolean;
     setExpandedId: (id: string | null) => void;
     handleCopy: (e: React.MouseEvent, text: string, id: string) => void;
     copiedId: string | null;
 }
 
-export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpandedId, handleCopy, copiedId }) => {
-    const isExpanded = expandedId === model.id;
+export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, setExpandedId, handleCopy, copiedId }) => {
     const hasMultipleProviders = model.providers && model.providers.length > 1;
     const [selectedProvider, setSelectedProvider] = React.useState(model.providers[0] || model.provider_name_from_group || "Kilo");
 
@@ -33,21 +33,37 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
     const outPrice = parseFloat(activeModelData.pricing?.completion || activeModelData.pricing?.output || 0);
 
     return (
-        <div
-            onClick={() => setExpandedId(isExpanded ? null : model.id)}
-            className={`glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer transition-all duration-200 ${isExpanded ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5'}`}
+        <motion.div
+            layoutId={`card-${model.id}`}
+            onClick={() => !isModal && setExpandedId(model.id)}
+            className={`glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer ${isModal ? 'w-full max-w-2xl max-h-[90vh] shadow-2xl z-50' : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-200'}`}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
-            <div className="p-5 flex-1 relative">
+            <div className={`p-5 flex-1 relative ${isModal ? 'overflow-y-auto custom-scrollbar' : ''}`}>
                 <div className="flex items-start justify-between mb-3">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            {model.name || model.id}
-                        </h3>
-                        <div
+                    <div className="w-full">
+                        <div className="flex justify-between items-center w-full">
+                            <motion.h3
+                                layoutId={`title-${model.id}`}
+                                className={`${isModal ? 'text-2xl' : 'text-lg'} font-bold text-slate-900 dark:text-white flex items-center gap-2`}
+                            >
+                                {model.name || model.id}
+                            </motion.h3>
+                            {isModal && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setExpandedId(null); }}
+                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            )}
+                        </div>
+                        <motion.div
+                            layoutId={`slug-${model.id}`}
                             onClick={(e) => handleCopy(e, model.id, `${model.id}-slug`)}
-                            className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer w-fit"
+                            className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer max-w-full"
                         >
-                            <code className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 group-hover/slug:border-primary/50 group-hover/slug:text-primary dark:group-hover/slug:text-primary-light transition-all block truncate max-w-[220px]">
+                            <code className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 group-hover/slug:border-primary/50 group-hover/slug:text-primary dark:group-hover/slug:text-primary-light transition-all block truncate min-w-0">
                                 {model.id}
                             </code>
                             <div className="relative flex items-center">
@@ -60,13 +76,14 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                                     </span>
                                 )}
                             </div>
-                            <span className="absolute -top-7 left-0 scale-0 group-hover/slug:scale-100 transition-transform origin-bottom bg-slate-800 text-white text-[9px] px-2 py-1 rounded pointer-events-none">
-                                Click to copy
-                            </span>
-                        </div>
+                        </motion.div>
 
-                        {hasMultipleProviders && isExpanded && (
-                            <div className="flex flex-wrap gap-1.5 mt-3">
+                        {hasMultipleProviders && (isModal) && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex flex-wrap gap-1.5 mt-3"
+                            >
                                 {model.providers.map((p: string) => (
                                     <button
                                         key={p}
@@ -76,12 +93,12 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                                         {p}
                                     </button>
                                 ))}
-                            </div>
+                            </motion.div>
                         )}
                     </div>
                 </div>
 
-                <div className="flex gap-2 mb-4 flex-wrap">
+                <motion.div layoutId={`modalities-${model.id}`} className="flex gap-2 mb-4 flex-wrap">
                     {(model.architecture?.modalities || []).map((mod: string) => {
                         const cfg = getModalityConfig(mod);
                         return (
@@ -91,13 +108,21 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                             </span>
                         );
                     })}
-                </div>
-                <p className={`text-sm text-slate-600 dark:text-slate-400 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                </motion.div>
+                <motion.p
+                    layoutId={`description-${model.id}`}
+                    className={`text-sm text-slate-600 dark:text-slate-400 ${isModal ? 'mb-6' : 'line-clamp-3'}`}
+                >
                     {model.description || "No description available."}
-                </p>
+                </motion.p>
 
-                {isExpanded && (
-                    <div className="mt-4 border-t border-slate-100 dark:border-slate-800/50 pt-4" onClick={e => e.stopPropagation()}>
+                {isModal && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 border-t border-slate-100 dark:border-slate-800/50 pt-4"
+                        onClick={e => e.stopPropagation()}
+                    >
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-xs font-semibold text-slate-500">Raw API JSON</span>
                             <button
@@ -110,14 +135,17 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                                 {copiedId === model.id ? 'Copied' : 'Copy'}
                             </button>
                         </div>
-                        <pre className="text-[10px] font-mono p-3 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-x-auto custom-scrollbar text-slate-800 dark:text-slate-300 max-h-60">
+                        <pre className="text-[10px] font-mono p-3 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-x-auto custom-scrollbar text-slate-800 dark:text-slate-300 max-h-80">
                             {JSON.stringify(activeModelData, null, 2)}
                         </pre>
-                    </div>
+                    </motion.div>
                 )}
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800/50">
+            <motion.div
+                layoutId={`footer-${model.id}`}
+                className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800/50"
+            >
                 <div className="grid grid-cols-3 gap-2 text-center divide-x divide-slate-200 dark:divide-slate-700">
                     <div>
                         <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-1">Context</p>
@@ -132,7 +160,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, expandedId, setExpa
                         <p className={`text-sm font-semibold ${outPrice === 0 ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-slate-200'}`}>${outPrice.toFixed(2)}</p>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };

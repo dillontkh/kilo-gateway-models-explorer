@@ -4,8 +4,10 @@ import { Sidebar } from './components/Sidebar';
 import { ModelCard } from './components/ModelCard';
 import MorphingPageDots from './components/ui/morphing-page-dots';
 import { getCachedData, setCachedData, isCacheValid, clearCache } from './utils/apiCache';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const MODELS_PER_PAGE = 16;
+
 
 const MOCK_MODELS = [
     { id: "kilo-auto-v1", name: "Kilo Auto router", description: "Automatically routes requests to the most efficient model based on prompt complexity.", provider_name_from_group: "Kilo AI", context_length: 128000, pricing: { prompt: "0.50", completion: "1.50" }, architecture: { modalities: ["text", "image"] } },
@@ -431,7 +433,7 @@ const App = () => {
                                         {paginatedModels.map(model => (
                                             <ModelCard
                                                 key={model.id} model={model}
-                                                expandedId={expandedId} setExpandedId={setExpandedId}
+                                                setExpandedId={setExpandedId}
                                                 handleCopy={handleCopy} copiedId={copiedId}
                                             />
                                         ))}
@@ -459,6 +461,34 @@ const App = () => {
                     )}
                 </main>
             </div>
+
+            <AnimatePresence>
+                {expandedId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setExpandedId(null)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        {/* We find the model from the full list or paginated list */}
+                        {(() => {
+                            const model = models.find(m => m.id === expandedId);
+                            if (!model) return null;
+                            return (
+                                <ModelCard
+                                    model={model}
+                                    isModal={true}
+                                    setExpandedId={setExpandedId}
+                                    handleCopy={handleCopy}
+                                    copiedId={copiedId}
+                                />
+                            );
+                        })()}
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
