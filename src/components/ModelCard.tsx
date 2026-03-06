@@ -44,7 +44,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                     <div className="w-full">
                         <div className="flex justify-between items-center w-full">
                             <h3
-                                layoutId={`title-${model.id}`}
                                 className={`${isModal ? 'text-2xl' : 'text-lg'} font-bold text-slate-900 dark:text-white flex items-center gap-2`}
                             >
                                 {model.name || model.id}
@@ -59,7 +58,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                             )}
                         </div>
                         <div
-                            layoutId={`slug-${model.id}`}
                             onClick={(e) => handleCopy(e, model.id, `${model.id}-slug`)}
                             className="group/slug relative flex items-center gap-2 mt-2 cursor-pointer max-w-full"
                         >
@@ -80,8 +78,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
 
                         {hasMultipleProviders && (isModal) && (
                             <div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
                                 className="flex flex-wrap gap-1.5 mt-3"
                             >
                                 {model.providers.map((p: string) => (
@@ -98,7 +94,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                     </div>
                 </div>
 
-                <div layoutId={`modalities-${model.id}`} className="flex gap-2 mb-4 flex-wrap">
+                <div className="flex gap-2 mb-4 flex-wrap">
                     {(model.architecture?.modalities || []).map((mod: string) => {
                         const cfg = getModalityConfig(mod);
                         return (
@@ -110,7 +106,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
                     })}
                 </div>
                 <p
-                    layoutId={`description-${model.id}`}
                     className={`text-sm text-slate-600 dark:text-slate-400 ${isModal ? 'mb-6' : 'line-clamp-3'}`}
                 >
                     {model.description || "No description available."}
@@ -118,8 +113,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
 
                 {isModal && (
                     <div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
                         className="mt-4 border-t border-slate-100 dark:border-slate-800/50 pt-4"
                         onClick={e => e.stopPropagation()}
                     >
@@ -143,7 +136,6 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, isModal = false, se
             </div>
 
             <div
-                layoutId={`footer-${model.id}`}
                 className="bg-slate-50 dark:bg-slate-900/50 p-4 border-t border-slate-100 dark:border-slate-800/50"
             >
                 <div className="grid grid-cols-3 gap-2 text-center divide-x divide-slate-200 dark:divide-slate-700">
