@@ -390,10 +390,10 @@ const App = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-slate-500 dark:text-slate-400">Sort by:</span>
+                                    <span className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">Sort by:</span>
                                     <select
                                         value={sortField} onChange={e => setSortField(e.target.value)}
-                                        className="block w-full pl-3 pr-8 py-2 text-base border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white cursor-pointer"
+                                        className="block w-full pl-3 pr-8 h-9 text-base border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white cursor-pointer"
                                     >
                                         <option value="name">Name</option>
                                         <option value="price">Price (Input)</option>
@@ -401,7 +401,7 @@ const App = () => {
                                     </select>
                                     <button
                                         onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                        className="p-2 ml-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary inline-flex items-center justify-center transition-colors"
+                                        className="h-9 w-9 flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary inline-flex items-center justify-center transition-colors"
                                         title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
                                     >
                                         <span className="material-symbols-outlined text-lg">
